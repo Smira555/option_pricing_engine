@@ -1,4 +1,4 @@
-# QuantPricer: Options Pricing & Analytics Engine
+# Options Pricing & Analytics Engine
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
