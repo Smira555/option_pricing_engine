@@ -27,10 +27,9 @@ python -m pip install --upgrade pip
 pip install -r backend/requirements.txt
 
 echo ====================================================
-echo Starting FastAPI Web Server at http://127.0.0.1:8000
+echo Starting Streamlit Dashboard...
 echo ====================================================
-echo You can view the dashboard by visiting: http://127.0.0.1:8000
 echo Press Ctrl+C in this terminal window to stop the server.
 echo ====================================================
 
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+streamlit run app.py

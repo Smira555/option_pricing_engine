@@ -1,12 +1,12 @@
-# Options Pricing & Analytics Engine
+# QuantPricer: Options Pricing & Analytics Engine
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.22+-red.svg)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 QuantPricer is an interactive quantitative finance engine for pricing European options and analyzing their risk profiles. It implements analytical closed-form equations (Black-Scholes-Merton), stochastic path simulations (Monte Carlo with variance reduction), and numerical root-finding (Newton-Raphson for Implied Volatility).
 
-The engine is backed by a modular Python + NumPy backend, exposed via a FastAPI REST service, and visualizes calculations through a high-performance, dark-mode glassmorphism dashboard.
+The engine is backed by a modular Python + NumPy backend, and visualizes calculations through an interactive Streamlit dashboard featuring high-performance Plotly charts.
 
 ---
 
@@ -25,10 +25,10 @@ The engine is backed by a modular Python + NumPy backend, exposed via a FastAPI 
 4.  **Live Market Data Fetcher**:
     *   Fetches current underlying prices and historical daily data (via Yahoo Finance).
     *   Automatically computes annualized historical volatility ($\sigma = \text{std}(\text{returns}) \times \sqrt{252}$).
-5.  **Interactive Visualizations (Chart.js)**:
-    *   *Path Simulation Chart*: View simulated Geometric Brownian Motion price paths.
-    *   *MC Convergence Chart*: Compare running estimate convergence against the analytical price.
-    *   *Price Sensitivity Chart*: Plot option value and intrinsic payoff across spot prices.
+5.  **Interactive Visualizations (Plotly)**:
+    *   *Path Simulation Chart*: Hover over individual simulated Geometric Brownian Motion price paths.
+    *   *MC Convergence Chart*: Zoom into running estimate convergence against the analytical price baseline.
+    *   *Price Sensitivity Chart*: Plot option value and intrinsic payoff across spot prices dynamically.
 
 ---
 
@@ -37,18 +37,14 @@ The engine is backed by a modular Python + NumPy backend, exposed via a FastAPI 
 ```text
 options-pricing-engine/
 ├── backend/
-│   ├── main.py                 # FastAPI Application & endpoint handlers
-│   ├── requirements.txt        # Backend dependencies
+│   ├── requirements.txt        # Backend dependencies (FastAPI, NumPy, SciPy, Streamlit, Plotly)
 │   └── engine/
 │       ├── __init__.py
 │       ├── black_scholes.py    # Analytical models & greeks
 │       ├── monte_carlo.py      # Path simulator & Antithetic Variates
 │       ├── implied_vol.py      # Newton-Raphson solver
 │       └── data_fetcher.py     # yfinance data fetching & volatility
-├── frontend/
-│   ├── index.html              # HTML Dashboard Structure
-│   ├── style.css               # Modern glassmorphism styling
-│   └── app.js                  # Frontend client & Chart.js integration
+├── app.py                      # Streamlit interactive dashboard
 ├── .gitignore
 ├── run.bat                     # Automation script to setup & launch
 └── README.md                   # Documentation & Interview Prep Guide
@@ -77,13 +73,37 @@ $$\text{Var}\left(\frac{X_1 + X_2}{2}\right) = \frac{1}{4} \left(\text{Var}(X_1)
 
 ## Installation & Running
 
-This project includes a convenient `run.bat` script that automates Python virtual environment configuration and starts the server.
+This project includes a convenient `run.bat` script that automates Python virtual environment configuration and starts the Streamlit server.
 
 1.  Clone the repository.
 2.  Double-click `run.bat` (or execute it in terminal):
     ```bash
     run.bat
     ```
-3.  Open your browser and navigate to: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+3.  Open your browser and navigate to: [http://localhost:8501](http://localhost:8501)
 
 ---
+
+## Internship Interview Q&A Guide
+
+Prepare for your interviews with these common questions about this codebase:
+
+### Q1: What is the difference between Black-Scholes and Monte Carlo pricing?
+*   **Answer**: Black-Scholes is a closed-form analytical model derived from a partial differential equation (PDE) under constant parameters. It is instantaneous and exact but restricted to simple European options. Monte Carlo is a numerical simulation technique that models stock prices along random paths. It is computationally expensive but flexible, allowing pricing of path-dependent options (like Asian or barrier options) or under complex stochastic volatility models.
+
+### Q2: What are the Option Greeks and what do they represent?
+*   **Answer**: Greeks measure the option's sensitivity to parameter changes:
+    *   **Delta ($\Delta$)**: Sensitivity to underlying price changes ($\frac{\partial V}{\partial S}$). Proxies the probability of expiring in-the-money.
+    *   **Gamma ($\Gamma$)**: Sensitivity of Delta to underlying price changes ($\frac{\partial^2 V}{\partial S^2}$). Measures directional risk acceleration.
+    *   **Vega ($\nu$)**: Sensitivity to changes in asset volatility ($\frac{\partial V}{\partial \sigma}$).
+    *   **Theta ($\Theta$)**: Sensitivity to the passage of time ($\frac{\partial V}{\partial T}$). Represents time decay.
+    *   **Rho ($\rho$)**: Sensitivity to changes in the risk-free rate ($\frac{\partial V}{\partial r}$).
+
+### Q3: How do Antithetic Variates work in your Monte Carlo model?
+*   **Answer**: Standard Monte Carlo simulation generates independent paths which can suffer from random noise. Antithetic Variates generate pairs of negatively correlated paths ($Z$ and $-Z$). Because the paths are negatively correlated, when one path randomly spikes high, its paired path drops low. Averaging their payoffs cancels out a large portion of the simulation noise (variance), speeding up convergence.
+
+### Q4: How does your Implied Volatility solver work?
+*   **Answer**: Implied volatility has no analytical formula. We use the Newton-Raphson method, which starts with a guess ($\sigma_0 = 20\%$) and iteratively updates it. The update step is $\sigma_{n+1} = \sigma_n - \frac{BS(\sigma_n) - C_{market}}{Vega(\sigma_n)}$. Vega acts as the derivative of the pricing function, showing how price changes with volatility. If Newton-Raphson diverges (e.g. due to near-zero Vega), the engine falls back to a Bisection solver which binary-searches the boundary space.
+
+### Q5: Why is this implemented in Python + NumPy instead of C++?
+*   **Answer**: In professional quantitative research and trading desks, Python is the industry standard for prototyping, data fetching, and API construction, while compiled languages are reserved for execution backends. By using vectorized NumPy arrays, mathematical calculations are compiled down to optimized C libraries under the hood, making standard simulation tasks nearly as fast as raw C++ while maintaining clean, readable code that is easy to integrate with live data feeds (yfinance) and visual interactive interfaces (Streamlit + Plotly).
