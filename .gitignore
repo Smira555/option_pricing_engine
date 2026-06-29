@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# VS Code / IDEs
+.vscode/
+.DS_Store
+.idea/
+
+# Market Cache
+.history/
