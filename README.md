@@ -87,27 +87,3 @@ This project includes a convenient `run.bat` script that automates Python virtua
 3.  Open your browser and navigate to: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
-
-## Internship Interview Q&A Guide
-
-Prepare for your interviews with these common questions about this codebase:
-
-### Q1: What is the difference between Black-Scholes and Monte Carlo pricing?
-*   **Answer**: Black-Scholes is a closed-form analytical model derived from a partial differential equation (PDE) under constant parameters. It is instantaneous and exact but restricted to simple European options. Monte Carlo is a numerical simulation technique that models stock prices along random paths. It is computationally expensive but flexible, allowing pricing of path-dependent options (like Asian or barrier options) or under complex stochastic volatility models.
-
-### Q2: What are the Option Greeks and what do they represent?
-*   **Answer**: Greeks measure the option's sensitivity to parameter changes:
-    *   **Delta ($\Delta$)**: Sensitivity to underlying price changes ($\frac{\partial V}{\partial S}$). Proxies the probability of expiring in-the-money.
-    *   **Gamma ($\Gamma$)**: Sensitivity of Delta to underlying price changes ($\frac{\partial^2 V}{\partial S^2}$). Measures directional risk acceleration.
-    *   **Vega ($\nu$)**: Sensitivity to changes in asset volatility ($\frac{\partial V}{\partial \sigma}$).
-    *   **Theta ($\Theta$)**: Sensitivity to the passage of time ($\frac{\partial V}{\partial T}$). Represents time decay.
-    *   **Rho ($\rho$)**: Sensitivity to changes in the risk-free rate ($\frac{\partial V}{\partial r}$).
-
-### Q3: How do Antithetic Variates work in your Monte Carlo model?
-*   **Answer**: Standard Monte Carlo simulation generates independent paths which can suffer from random noise. Antithetic Variates generate pairs of negatively correlated paths ($Z$ and $-Z$). Because the paths are negatively correlated, when one path randomly spikes high, its paired path drops low. Averaging their payoffs cancels out a large portion of the simulation noise (variance), speeding up convergence.
-
-### Q4: How does your Implied Volatility solver work?
-*   **Answer**: Implied volatility has no analytical formula. We use the Newton-Raphson method, which starts with a guess ($\sigma_0 = 20\%$) and iteratively updates it. The update step is $\sigma_{n+1} = \sigma_n - \frac{BS(\sigma_n) - C_{market}}{Vega(\sigma_n)}$. Vega acts as the derivative of the pricing function, showing how price changes with volatility. If Newton-Raphson diverges (e.g. due to near-zero Vega), the engine falls back to a Bisection solver which binary-searches the boundary space.
-
-### Q5: Why is this implemented in Python + NumPy instead of C++?
-*   **Answer**: In professional quantitative research and trading desks, Python is the industry standard for prototyping, data fetching, and API construction, while compiled languages are reserved for execution backends. By using vectorized NumPy arrays, mathematical calculations are compiled down to optimized C libraries under the hood, making standard simulation tasks nearly as fast as raw C++ while maintaining clean, readable code that is easy to integrate with live data feeds (yfinance) and REST APIs (FastAPI).
